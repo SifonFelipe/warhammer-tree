@@ -1,13 +1,13 @@
-from .utils import Position
-from .warhammer_draw import Draw
-from problem import Problem
-
 import sys
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import Tuple
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from .utils import Position
+from .warhammer_draw import Draw
+from problem import Problem
 
 # Actions
 MOVE = "move"
