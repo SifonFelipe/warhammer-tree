@@ -17,10 +17,10 @@ class Draw:
         all_y = []
 
         for node in self.nodes:
-            all_x.append(node.status.position.x)
-            all_y.append(node.status.position.y)
+            all_x.append(node.state.position.x)
+            all_y.append(node.state.position.y)
 
-            for xeno in node.status.xenos:
+            for xeno in node.state.xenos:
                 all_x.append(xeno.x)
                 all_y.append(xeno.y)
 
@@ -36,10 +36,10 @@ class Draw:
 
             grid = [["." for _ in range(grid_w)] for _ in range(grid_h)]
 
-            pos = node.status.position
+            pos = node.state.position
             grid[pos.y + offset_y][pos.x + offset_x] = f"{Colors.CYAN}{Colors.BOLD}Ω{Colors.RESET}"
 
-            for xeno in node.status.xenos:
+            for xeno in node.state.xenos:
                 grid[xeno.y + offset_y][xeno.x + offset_x] = f"{Colors.DARK_RED}X{Colors.RESET}"
 
             # Interface "Data-Slate" of Mechanicus
@@ -52,9 +52,9 @@ class Draw:
 
             # System "teletry"
             print(f"{Colors.BRONZE}>>> MACHINE SPIRIT STATUS:{Colors.RESET}")
-            print(f" Faith Core   : [{Colors.CYAN}{'█' * (node.status.faith // 2)}"\
-                  f"{'░' * (10 - node.status.faith // 2)}{Colors.RESET}] {node.status.faith}%")
-            print(f" Weapon Link  : {'[ARMED]' if node.status.armed else '[DISARMED]'}")
+            print(f" Faith Core   : [{Colors.CYAN}{'█' * (node.state.faith // 2)}"\
+                  f"{'░' * (10 - node.state.faith // 2)}{Colors.RESET}] {node.state.faith}%")
+            print(f" Weapon Link  : {'[ARMED]' if node.state.armed else '[DISARMED]'}")
             print(f" Last Invoked : {node.show_action()}")
             print(f"{Colors.BRONZE}+++ END OF TRANSMISSION +++{Colors.RESET}")
 
