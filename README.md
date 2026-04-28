@@ -5,6 +5,7 @@
 
 You are a Devastator Space Marine and your objetive is to purge every xenos in the map.
 
+[Preview](https://github.com/user-attachments/assets/7b6d6d9c-1668-4cf7-bbfd-174503f6e86e)
 
 Your movements are *orthogonal* (90 angles only), you can *set and unset your gun*,
 *shoot* in a distance of 2 and *pray* to the Emperor to restore faith.
