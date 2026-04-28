@@ -172,6 +172,14 @@ class WarhammerProblem(Problem):
 
         return new_state
 
+    def calculate_heuristic(self, state):
+        heuristic = 0 if state.armed else 1  # Being armed == closer to solution
+
+        for xeno in state.xenos:
+            heuristic += state.position.get_distance(xeno)
+
+        return heuristic
+
     def after_solve(self, nodes):
         """
         After solving, we can show the solution visually

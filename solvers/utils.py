@@ -10,10 +10,11 @@ class Node:
     Node class represents a state in the search tree,
     along with its parent and the action taken to reach it.
     """
-    def __init__(self, state, parent=None, action=None):
+    def __init__(self, state, parent=None, action=None, heuristic=0):
         self.state = state
         self.parent = parent
         self.action = action
+        self.heuristic = 0
 
     @property
     def is_head(self):

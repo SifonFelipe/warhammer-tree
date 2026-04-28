@@ -1,8 +1,3 @@
-"""
-Depth first search implementation for solving problems defined
-in the 'problems' module.
-"""
-import random
 import sys
 import os
 
@@ -11,13 +6,14 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from solver import Solver
 from .utils import Node
 
-class DFS_Solver(Solver):
+class AStar_Solver(Solver):
     """
-    Depth-First Search (DFS) explores as far as possible along each branch before backtracking.
-    This approach can be more memory-efficient than BFS, as it doesn't need to store all nodes at
+    A* Search is a best-first search algorithm that uses a heuristic to estimate the cost of reaching the goal from a given node.
+    It combines the actual cost from the start node to the current node with the estimated cost from the current node to the goal.
+    This allows it to prioritize nodes that are likely to lead to a solution more quickly.
     """
 
-    name = "Depth-First Search"
+    name = "A* Search"
 
     def create_node(self, state, parent=None, action=None):
         return Node(state=state, parent=parent, action=action)
@@ -31,12 +27,10 @@ class DFS_Solver(Solver):
             return self.found_solution(self.initial_node, nodes_checked)
 
         while True:
-            parent_node = self.weights.pop()  # Pop the last one
+            parent_node = self.weights.pop(0)
+
             state = parent_node.state
             actions = self.problem.get_actions(state)
-
-            # Shuffle actions to add some randomness to the search
-            random.shuffle(actions)
 
             for action in actions:
                 new_state = self.problem.apply_action(state, action)
@@ -45,5 +39,3 @@ class DFS_Solver(Solver):
                 nodes_checked += 1
                 if self.problem.check_win(new_state):
                     return self.found_solution(new_node, nodes_checked)
-
-                self.weights.append(new_node)

@@ -3,7 +3,8 @@ import solvers
 
 SOLVERS = {
     "BFS": solvers.BFS_Solver,
-    "DFS": solvers.DFS_Search
+    "DFS": solvers.DFS_Solver,
+    "ASTAR": solvers.AStar_Solver,
 }
 
 if __name__ == "__main__":
