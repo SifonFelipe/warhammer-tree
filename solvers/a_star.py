@@ -57,9 +57,9 @@ class AStar_Solver(Solver):
                 elif lower_heuristic.heuristic > new_node.heuristic:
                     lower_heuristic = new_node
 
-                #print(new_node.show())
-                #input(" ")
+                print(new_node.show())
 
-            #print(f"\nSelected: {lower_heuristic.show()}\n")
+            print(f"\nSelected: {lower_heuristic.show()}\n")
+            input(" ")
             self.weights.append(lower_heuristic)
 

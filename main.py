@@ -14,7 +14,7 @@ if __name__ == "__main__":
         xenos=(
             problems.Position(2, 0),
             problems.Position(-2, 1),
-            problems.Position(0, 2),
+            problems.Position(0, 3),
             problems.Position(3, 0),
             #problems.Position(3, 0),
             #problems.Position(0, 3),

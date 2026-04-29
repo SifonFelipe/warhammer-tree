@@ -25,6 +25,22 @@ FAITH_COSTS = {
 SHOOT_DISTANCE = 2
 FAITH_MAX = 20  # If faith goes to 0, he loses
 
+def position_is_in(pos, range_positions):
+    """
+    Check if a position is in a list of positions (by coordinates).
+    Mute from Tuple to Position object
+    """
+
+    if isinstance(pos, Position):
+        pos = (pos.x, pos.y)
+
+    for position in range_positions:
+        if (position.x, position.y) == pos:
+            return True
+
+    return False
+
+
 @dataclass
 class GoldPosition:
     """
@@ -93,7 +109,7 @@ class WarhammerProblem(Problem):
                 Position(pos.x, pos.y + 1),
                 Position(pos.x, pos.y - 1),
             ]:
-                if mov not in xenos:
+                if not position_is_in(mov, xenos):
                     actions.append(("move", mov))
 
         # Check armed and shoot distance
@@ -240,7 +256,6 @@ class WarhammerProblem(Problem):
 
         # Base costs that are always required
         shoot_cost = FAITH_COSTS[SHOOT] * len(xenos)
-        arm_cost = 0 if state.armed else FAITH_COSTS[ARM]
 
         # Try to find a gold position (hits 2+ xenos) to move toward
         golds = self.gold_positions(state)
@@ -255,8 +270,7 @@ class WarhammerProblem(Problem):
 
         move_cost = move_dist * FAITH_COSTS[MOVE]
 
-        heuristic = shoot_cost + arm_cost + move_cost
-
+        heuristic = shoot_cost + move_cost
         return heuristic
 
     def after_solve(self, nodes):
