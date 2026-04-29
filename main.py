@@ -15,10 +15,13 @@ if __name__ == "__main__":
             problems.Position(2, 0),
             problems.Position(-2, 0),
             problems.Position(0, 2),
-            problems.Position(0, -3)
+            problems.Position(0, -3),
+            #problems.Position(0, 3),
+            #problems.Position(2, 2),
+            #problems.Position(-2, -2),
         ),
         armed=False,
-        faith=20
+        faith=10
     )
     wh_problem = problems.WarhammerProblem(
         name="Warhammer 40k: Purge",
@@ -28,7 +31,7 @@ if __name__ == "__main__":
         expected_depth=8
     )
 
-    solver = SOLVERS["BFS"]
+    solver = SOLVERS["ASTAR"]
     solver = solver(wh_problem)
     solver.run()
     solver.results()

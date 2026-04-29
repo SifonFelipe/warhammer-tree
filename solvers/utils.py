@@ -14,7 +14,7 @@ class Node:
         self.state = state
         self.parent = parent
         self.action = action
-        self.heuristic = 0
+        self.heuristic = heuristic
 
     @property
     def is_head(self):
@@ -46,5 +46,5 @@ class Node:
 
     def show(self):
         action = self.show_action()
-        return f"State: {self.state.show()}, Action: {action}"
+        return f"State: {self.state.show()}, Action: {action}, Heuristic: {self.heuristic}"
 

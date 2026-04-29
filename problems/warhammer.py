@@ -172,13 +172,27 @@ class WarhammerProblem(Problem):
 
         return new_state
 
-    def calculate_heuristic(self, state):
-        heuristic = 0 if state.armed else 1  # Being armed == closer to solution
+    def get_heuristic(self, state):
+        """
+        Costo mínimo esperado de Fe para ganar desde el estado actual.
+        Debe ser admisible (nunca sobreestimar el costo real).
+        """
+        xenos = state.xenos
+        pos = state.position
 
-        for xeno in state.xenos:
-            heuristic += state.position.get_distance(xeno)
+        if not xenos:
+            return 0
 
-        return heuristic
+        shoot_cost = FAITH_COSTS[SHOOT] * len(xenos)
+
+        arm_cost = 0 if state.armed else FAITH_COSTS[ARM]
+
+        min_dist = min(pos.get_distance(x) for x in xenos)
+
+        move_needed = max(0, min_dist - (len(xenos) * SHOOT_DISTANCE))
+        move_cost = move_needed * FAITH_COSTS[MOVE]
+
+        return shoot_cost + arm_cost + move_cost
 
     def after_solve(self, nodes):
         """

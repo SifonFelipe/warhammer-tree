@@ -35,15 +35,25 @@ class Solver(ABC):
 
     def found_solution(self, solution_node, nodes_checked):
         """ Set the solution node and the number of nodes checked. """
+        print()  # Line jump after the last progress update
         self.solution_node = solution_node
         self.nodes_checked = nodes_checked
         self.switch_timer()
 
         return solution_node, nodes_checked
 
+    def refresh_status(self, nodes_checked):
+        """ Refresh the status of the search, such as the number of nodes checked. """
+        print(f"\rChecked {nodes_checked} nodes...", end="", flush=True)
+
     @abstractmethod
-    def create_node(self, state, parent=None, action=None):
+    def create_node(self, state, parent=None, action=None, heuristic=0):
         """ Create a new node with the given state, parent, and action. """
+        raise NotImplementedError("Subclasses should implement this method")
+
+    @abstractmethod
+    def logic(self):
+        """ Implement the core logic of the search algorithm. """
         raise NotImplementedError("Subclasses should implement this method")
 
     @abstractmethod
