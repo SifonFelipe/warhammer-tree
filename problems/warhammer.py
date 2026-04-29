@@ -1,6 +1,7 @@
 import sys
 import os
 from dataclasses import dataclass
+from collections import defaultdict
 from typing import Tuple
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -23,6 +24,16 @@ FAITH_COSTS = {
 }
 SHOOT_DISTANCE = 2
 FAITH_MAX = 20  # If faith goes to 0, he loses
+
+@dataclass
+class GoldPosition:
+    """
+    A position from which you can shoot multiple xenos,
+    with the count of xenos and distance to it.
+    """
+    position: Position
+    xeno_count: int
+    distance: int
 
 
 @dataclass
@@ -74,14 +85,14 @@ class WarhammerProblem(Problem):
         arm_cost = FAITH_COSTS[ARM]
         pray_cost = FAITH_COSTS[PRAY]
 
-        # Check for movements
+        # Movement: cardinal only (Manhattan step)
         if faith >= move_cost and not is_armed:
-            right = Position(pos.x + 1, pos.y)
-            left = Position(pos.x - 1, pos.y)
-            up = Position(pos.x, pos.y + 1)
-            down = Position(pos.x, pos.y - 1)
-
-            for mov in [right, left, up, down]:
+            for mov in [
+                Position(pos.x + 1, pos.y),
+                Position(pos.x - 1, pos.y),
+                Position(pos.x, pos.y + 1),
+                Position(pos.x, pos.y - 1),
+            ]:
                 if mov not in xenos:
                     actions.append(("move", mov))
 
@@ -92,9 +103,8 @@ class WarhammerProblem(Problem):
 
                 if faith >= shoot_cost:
                     for xeno in xenos:
-                        if pos.get_distance(xeno) <= SHOOT_DISTANCE:
+                        if pos.chebyshev_distance(xeno) <= SHOOT_DISTANCE:
                             actions.append(("shoot", xeno))
-
             else:
                 actions.append(("arm", True))
 
@@ -172,10 +182,55 @@ class WarhammerProblem(Problem):
 
         return new_state
 
+    def gold_positions(self, state):
+        """
+        Gold positions are positions from which you can kill the most xenos
+        with the fewest moves.
+        Returns a list of (position, xeno_count) tuples,
+        sorted best-first.
+        """
+        xenos = state.xenos
+        position = state.position
+
+        if not xenos:
+            return []
+
+        # Map each xeno to the set of positions from which it can be shot
+        xeno_ranges = {
+            xeno: set(xeno.positions_in_range(SHOOT_DISTANCE))
+            for xeno in xenos
+        }
+
+        # Score every candidate position: how many xenos can be hit from there?
+        position_scores = defaultdict(int)
+        for xeno, reachable_positions in xeno_ranges.items():
+            for pos in reachable_positions:
+                for x in xenos:
+                    if pos.get_distance(x) == 0:
+                        continue  # Can't stand on a xeno
+
+                pos = (pos.x, pos.y)  # Use tuple for dict key
+                position_scores[pos] += 1
+
+        # Sort by score descending
+        gold = sorted(position_scores.items(), key=lambda item: item[1], reverse=True)
+
+        # Only return positions where you can hit more than 1 xeno
+        gold = [
+            GoldPosition(
+                position=Position(pos[0], pos[1]),
+                xeno_count=count,
+                distance=position.distance_to(Position(pos[0], pos[1]))
+            )
+            for pos, count in gold if count > 1
+        ]
+
+        return gold
+
     def get_heuristic(self, state):
         """
-        Costo mínimo esperado de Fe para ganar desde el estado actual.
-        Debe ser admisible (nunca sobreestimar el costo real).
+        Minimum cost expected for Faith to win from the current state.
+        Not overestimated, but not exact either.
         """
         xenos = state.xenos
         pos = state.position
@@ -183,16 +238,26 @@ class WarhammerProblem(Problem):
         if not xenos:
             return 0
 
+        # Base costs that are always required
         shoot_cost = FAITH_COSTS[SHOOT] * len(xenos)
-
         arm_cost = 0 if state.armed else FAITH_COSTS[ARM]
 
-        min_dist = min(pos.get_distance(x) for x in xenos)
+        # Try to find a gold position (hits 2+ xenos) to move toward
+        golds = self.gold_positions(state)
+        if golds:
+            # Best gold: most xenos first, then closest (already sorted by count)
+            # Prefer positions we can reach that let us kill the most
+            best_gold = min(golds, key=lambda g: (g.xeno_count * -1, g.distance))
+            move_dist = max(0, best_gold.distance - SHOOT_DISTANCE)
+        else:
+            # No multi-kill position: just move toward the nearest xeno
+            move_dist = max(0, min(pos.distance_to(x) for x in xenos) - SHOOT_DISTANCE)
 
-        move_needed = max(0, min_dist - (len(xenos) * SHOOT_DISTANCE))
-        move_cost = move_needed * FAITH_COSTS[MOVE]
+        move_cost = move_dist * FAITH_COSTS[MOVE]
 
-        return shoot_cost + arm_cost + move_cost
+        heuristic = shoot_cost + arm_cost + move_cost
+
+        return heuristic
 
     def after_solve(self, nodes):
         """

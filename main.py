@@ -13,15 +13,15 @@ if __name__ == "__main__":
         position=problems.Position(0, 0),
         xenos=(
             problems.Position(2, 0),
-            problems.Position(-2, 0),
+            problems.Position(-2, 1),
             problems.Position(0, 2),
-            problems.Position(0, -3),
+            problems.Position(3, 0),
+            #problems.Position(3, 0),
             #problems.Position(0, 3),
-            #problems.Position(2, 2),
-            #problems.Position(-2, -2),
+            #problems.Position(-3, 3),
         ),
         armed=False,
-        faith=10
+        faith=20
     )
     wh_problem = problems.WarhammerProblem(
         name="Warhammer 40k: Purge",
