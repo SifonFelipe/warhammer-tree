@@ -25,10 +25,10 @@ class Position:
         """
         Straight line distance to another position.
         """
-        return math.sqrt(
+        return int(math.sqrt(
             (self.x - other.x) ** 2
             + (self.y - other.y) ** 2
-        )
+        ))
 
     def show(self):
         return f"({self.x}, {self.y})"

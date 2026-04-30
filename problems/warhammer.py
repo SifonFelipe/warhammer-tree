@@ -1,3 +1,4 @@
+import math
 import sys
 import os
 from dataclasses import dataclass
@@ -24,6 +25,7 @@ FAITH_COSTS = {
 }
 SHOOT_DISTANCE = 2
 FAITH_MAX = 20  # If faith goes to 0, he loses
+UNNECESARY_PRAY_PENALTY = 5
 
 def position_is_in(pos, range_positions):
     """
@@ -122,7 +124,10 @@ class WarhammerProblem(Problem):
                         if pos.chebyshev_distance(xeno) <= SHOOT_DISTANCE:
                             actions.append(("shoot", xeno))
             else:
-                actions.append(("arm", True))
+                for xeno in xenos:
+                    if pos.chebyshev_distance(xeno) <= SHOOT_DISTANCE:
+                        actions.append(("arm", True))
+                        break
 
         # Check faith
         if faith < FAITH_MAX:
@@ -244,34 +249,27 @@ class WarhammerProblem(Problem):
         return gold
 
     def get_heuristic(self, state):
-        """
-        Minimum cost expected for Faith to win from the current state.
-        Not overestimated, but not exact either.
-        """
         xenos = state.xenos
         pos = state.position
 
         if not xenos:
             return 0
 
-        # Base costs that are always required
         shoot_cost = FAITH_COSTS[SHOOT] * len(xenos)
+        min_distance = min(pos.distance_to(x) for x in xenos)
+        move_cost = max(0, min_distance - SHOOT_DISTANCE) * FAITH_COSTS[MOVE]
+        arm_cost = 0 if state.armed else FAITH_COSTS[ARM]
 
-        # Try to find a gold position (hits 2+ xenos) to move toward
-        golds = self.gold_positions(state)
-        if golds:
-            # Best gold: most xenos first, then closest (already sorted by count)
-            # Prefer positions we can reach that let us kill the most
-            best_gold = min(golds, key=lambda g: (g.xeno_count * -1, g.distance))
-            move_dist = max(0, best_gold.distance - SHOOT_DISTANCE)
-        else:
-            # No multi-kill position: just move toward the nearest xeno
-            move_dist = max(0, min(pos.distance_to(x) for x in xenos) - SHOOT_DISTANCE)
+        min_faith_needed = shoot_cost + move_cost + arm_cost  # negative (costs)
 
-        move_cost = move_dist * FAITH_COSTS[MOVE]
+        faith_deficit = min_faith_needed - state.faith  # both negative
+        pray_cost = 0
+        if faith_deficit < 0:  # Need more faith
+            pray_gain = abs(FAITH_COSTS[PRAY])
+            prays_needed = math.ceil(abs(faith_deficit) / pray_gain)
+            pray_cost = prays_needed
 
-        heuristic = shoot_cost + move_cost
-        return heuristic
+        return shoot_cost + move_cost + arm_cost + pray_cost
 
     def after_solve(self, nodes):
         """
